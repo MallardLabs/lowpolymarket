@@ -581,6 +581,14 @@ class Economy(commands.Cog):
         # Immediately acknowledge the interaction
         await interaction.response.defer(ephemeral=False)
         
+        # Check if the user has the required roles to create markets
+        allowed_role_ids = {1301958999092236389} # Set to P-Vazzy role for testing
+        user_roles = {role.id for role in interaction.user.roles}
+
+        if not user_roles.intersection(allowed_role_ids):
+            await interaction.followup.send("You do not have permission to create prediction markets.", ephemeral=True)
+            return
+        
         try:
             # Process options
             options_list = [opt.strip() for opt in options.split(",")]
@@ -884,7 +892,7 @@ class Economy(commands.Cog):
     @app_commands.command(name="resolve_prediction", description="Vote to resolve a prediction")
     async def resolve_prediction_command(self, interaction: discord.Interaction):
         # Check if the user has the required roles
-        allowed_role_ids = {1227314810853523526} # 1227314810853523526, 1301959367536672838, 1301958607046443018, 1301958999092236389, 
+        allowed_role_ids = {1301958150836064477, 918868730426052658} # set to Mallard Labs | Celeris and P-Vazzy roles for testing
         user_roles = {role.id for role in interaction.user.roles}
 
         if not user_roles.intersection(allowed_role_ids):
