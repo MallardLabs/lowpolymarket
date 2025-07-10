@@ -892,7 +892,7 @@ class Economy(commands.Cog):
     @app_commands.command(name="resolve_prediction", description="Vote to resolve a prediction")
     async def resolve_prediction_command(self, interaction: discord.Interaction):
         # Check if the user has the required roles
-        resolver_role_ids = {1301958150836064477, 918868730426052658} # set to Mallard Labs | Celeris and P-Vazzy roles for testing
+        resolver_role_ids = {1301959367536672838, 1301958999092236389} # set to Mallard Labs | Celeris and P-Vazzy roles for testing
         user_roles = {role.id for role in interaction.user.roles}
 
         if not user_roles.intersection(resolver_role_ids):
