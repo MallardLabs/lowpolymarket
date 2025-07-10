@@ -472,7 +472,7 @@ class ResolutionButton(discord.ui.Button):
             await interaction.message.edit(view=self.view)
 
             # Check if threshold reached (9 votes)
-            if len(self.view.votes[self.option]) >= 9:
+            if len(self.view.votes[self.option]) >= 2:
                 if not self.prediction.resolved:
                     await self.prediction.async_resolve(self.option)  # Use async_resolve
 
@@ -963,7 +963,7 @@ class Economy(commands.Cog):
                         await interaction.response.send_message(f"You voted for {option}.", ephemeral=True)
 
                         # Check if the threshold is met
-                        if len(selected_prediction.votes[option]) >= 9:  # Adjust threshold as needed
+                        if len(selected_prediction.votes[option]) >= 2:  # Adjust threshold as needed
                             await selected_prediction.async_resolve(option)
                             await interaction.channel.send(f"Market resolved! The winning option is: {option}")
                             await interaction.message.edit(embed=embed, view=None)  # Disable buttons after resolution
