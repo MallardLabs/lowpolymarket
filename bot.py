@@ -131,4 +131,5 @@ class DiscordBot(commands.Bot):
 load_dotenv(override= True)
 
 bot = DiscordBot()
-bot.run(os.getenv("TOKEN"))
+webserver.keep_alive()
+bot.run(os.getenv("DISCORD_TOKEN"))
