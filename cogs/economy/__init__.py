@@ -582,10 +582,10 @@ class Economy(commands.Cog):
         await interaction.response.defer(ephemeral=False)
         
         # Check if the user has the required roles to create markets
-        allowed_role_ids = {1301958999092236389} # Set to P-Vazzy role for testing
+        creator_role_ids = {1301958999092236389} # Set to P-Vazzy role for testing
         user_roles = {role.id for role in interaction.user.roles}
 
-        if not user_roles.intersection(allowed_role_ids):
+        if not user_roles.intersection(creator_role_ids):
             await interaction.followup.send("You do not have permission to create prediction markets.", ephemeral=True)
             return
         
@@ -892,10 +892,10 @@ class Economy(commands.Cog):
     @app_commands.command(name="resolve_prediction", description="Vote to resolve a prediction")
     async def resolve_prediction_command(self, interaction: discord.Interaction):
         # Check if the user has the required roles
-        allowed_role_ids = {1301958150836064477, 918868730426052658} # set to Mallard Labs | Celeris and P-Vazzy roles for testing
+        resolver_role_ids = {1301958150836064477, 918868730426052658} # set to Mallard Labs | Celeris and P-Vazzy roles for testing
         user_roles = {role.id for role in interaction.user.roles}
 
-        if not user_roles.intersection(allowed_role_ids):
+        if not user_roles.intersection(resolver_role_ids):
             await interaction.response.send_message("You do not have permission to resolve predictions.", ephemeral=True)
             return
         
@@ -959,7 +959,7 @@ class Economy(commands.Cog):
                     async def button_callback(interaction: discord.Interaction, option=option):
                         # Add role check here as well
                         user_roles = {role.id for role in interaction.user.roles}
-                        if not user_roles.intersection(allowed_role_ids):
+                        if not user_roles.intersection(resolver_role_ids):
                             await interaction.response.send_message("You do not have permission to vote on predictions.", ephemeral=True)
                             return
 

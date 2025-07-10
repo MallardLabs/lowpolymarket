@@ -5,7 +5,7 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "Pasture is running!"
+    return "Pasture2 is running!"
 
 def run():
     app.run(host="0.0.0.0", port=8080)
