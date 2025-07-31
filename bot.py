@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 
 from helpers.SimplePointsManager import PointsManagerSingleton
 from cogs import EXTENSIONS
+from config import validate_configuration, print_configuration_summary, ConfigurationError
+from core.logging_manager import get_logging_manager, get_logger, set_correlation_id
 
 intents = discord.Intents.default()
 
@@ -44,37 +46,60 @@ class LoggingFormatter(logging.Formatter):
         return formatter.format(record)
 
 
+# Initialize configuration first
+try:
+    settings = validate_configuration()
+    print_configuration_summary(settings)
+except ConfigurationError as e:
+    print(f"❌ Configuration Error: {e}")
+    exit(1)
+
 logger = logging.getLogger("discord_bot")
-logger.setLevel(logging.INFO)
+logger.setLevel(getattr(logging, settings.logging.level))
 
 # Console handler
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(LoggingFormatter())
-# File handler
-file_handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
-file_handler_formatter = logging.Formatter(
-    "[{asctime}] [{levelname:<8}] {name}: {message}", "%Y-%m-%d %H:%M:%S", style="{"
-)
-file_handler.setFormatter(file_handler_formatter)
+if settings.logging.console_enabled:
+    console_handler = logging.StreamHandler()
+    if settings.logging.console_colors:
+        console_handler.setFormatter(LoggingFormatter())
+    else:
+        console_formatter = logging.Formatter(
+            settings.logging.format, settings.logging.date_format, style="{"
+        )
+        console_handler.setFormatter(console_formatter)
+    logger.addHandler(console_handler)
 
-# Add the handlers
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
+# File handler
+if settings.logging.file_enabled:
+    # Ensure log directory exists
+    os.makedirs(os.path.dirname(settings.logging.file_path), exist_ok=True)
+    
+    file_handler = logging.FileHandler(
+        filename=settings.logging.file_path, 
+        encoding="utf-8", 
+        mode="w"
+    )
+    file_handler_formatter = logging.Formatter(
+        settings.logging.format, settings.logging.date_format, style="{"
+    )
+    file_handler.setFormatter(file_handler_formatter)
+    logger.addHandler(file_handler)
 
 
 class DiscordBot(commands.Bot):
-    def __init__(self) -> None:
+    def __init__(self, settings) -> None:
         super().__init__(
-            command_prefix=commands.when_mentioned,
+            command_prefix=settings.discord.command_prefix,
             intents=intents
         )
         self.logger = logger
         self._connected = False
+        self.settings = settings
 
         self.points_manager = PointsManagerSingleton(
-            base_url=os.getenv("API_BASE_URL"),
-            api_key=os.getenv("API_KEY"),
-            realm_id=os.getenv("REALM_ID")
+            base_url=settings.drip_api.base_url,
+            api_key=settings.drip_api.api_key,
+            realm_id=settings.drip_api.realm_id
         )
 
     async def load_cogs(self) -> None:
@@ -113,10 +138,12 @@ class DiscordBot(commands.Bot):
         Overriding :meth:`~discord.Client.on_ready`, to do some basic connect/reconnect info
         """
         await self.wait_until_ready()
-        await self.tree.sync()
+        if self.settings.discord.sync_commands:
+            await self.tree.sync()
         if not self._connected:
             self.logger.info("Bot is ready!" + self.user.name)
-            self.logger.info("synced!")
+            if self.settings.discord.sync_commands:
+                self.logger.info("synced!")
         else:
             self.logger.info("Bot reconnected.")
 
@@ -129,8 +156,8 @@ class DiscordBot(commands.Bot):
         await super().close()
 
 
-load_dotenv(override= True)
+load_dotenv(override=True)
 
-bot = DiscordBot()
+bot = DiscordBot(settings)
 webserver.keep_alive()
-bot.run(os.getenv("DISCORD_TOKEN"))
+bot.run(settings.discord.token)

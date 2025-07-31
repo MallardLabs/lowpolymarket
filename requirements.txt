@@ -4,3 +4,9 @@ discord.py
 python-dotenv
 jishaku==2.6.0
 Flask==3.1.1
+supabase>=2.0.0
+asyncpg>=0.29.0
+tabulate
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+cryptography>=41.0.0
